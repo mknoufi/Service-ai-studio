@@ -712,78 +712,86 @@ export default function App() {
   };
 
   return (
-    <div id="emart-root-layout" className="flex flex-col h-screen w-full bg-slate-50 text-slate-950 font-sans overflow-hidden">
+    <div id="emart-root-layout" className="flex flex-col h-screen w-full bg-[#f8f9ff] text-slate-900 font-sans overflow-hidden">
       
       {/* Top Header Navigation */}
-      <header id="main-header" className="h-12 bg-slate-900 text-white flex items-center justify-between px-3 shrink-0 border-b border-slate-700">
-        <div className="flex items-center gap-5">
+      <header id="main-header" className="h-14 bg-[#2563eb] text-white flex items-center justify-between px-4 shrink-0 shadow-sm z-10 relative">
+        <div className="flex items-center gap-6">
           <div className="flex items-center gap-3 font-bold tracking-tight cursor-pointer" onClick={() => setCurrentScreen("dashboard")}>
-            <BrandLogo className="w-8 h-8 text-blue-500" />
+            <BrandLogo className="w-8 h-8 text-white" />
             <div className="flex flex-col leading-none">
-              <span className="text-[12px] font-semibold text-white tracking-tight">Lavanya</span>
+              <span className="text-[12px] font-semibold text-blue-100 tracking-tight">Lavanya</span>
               <span className="text-[18px] font-black text-white tracking-tighter" style={{ marginTop: '-2px' }}>mart</span>
             </div>
-            <span className="ml-2 text-slate-400 font-normal text-xs px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700">Helpdesk ERP v2.4</span>
+            <span className="ml-2 text-blue-100 font-normal text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 bg-blue-700 rounded shadow-inner">Helpdesk ERP v2.4</span>
           </div>
 
-          <nav className="hidden md:flex gap-1 h-full items-center">
-            <button
-              onClick={() => { setCurrentScreen("dashboard"); setQueueFilter("all"); }}
-              className={`px-3 h-12 text-xs font-semibold flex items-center transition-all ${
-                currentScreen === "dashboard" ? "bg-slate-800 border-b-2 border-orange-500 text-white" : "text-slate-300 hover:bg-slate-800"
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5 mr-1.5 text-orange-500" />
-              Today's Work
-            </button>
-            <button
-              onClick={() => setCurrentScreen("new_ticket")}
-              className={`px-3 h-12 text-xs font-semibold flex items-center transition-all ${
-                currentScreen === "new_ticket" ? "bg-slate-800 border-b-2 border-orange-500 text-white" : "text-slate-300 hover:bg-slate-800"
-              }`}
-            >
-              <Plus className="w-3.5 h-3.5 mr-1.5 text-green-400" />
-              New Ticket
-            </button>
-            <button
-              onClick={() => setCurrentScreen("reports")}
-              className={`px-3 h-12 text-xs font-semibold flex items-center transition-all ${
-                currentScreen === "reports" ? "bg-slate-800 border-b-2 border-orange-500 text-white" : "text-slate-300 hover:bg-slate-800"
-              }`}
-            >
-              <BarChart3 className="w-3.5 h-3.5 mr-1.5 text-sky-450" />
-              Reports Center
-            </button>
+          <nav className="hidden md:flex gap-1.5 h-full items-center">
+            {currentUser.role !== "Viewer" && (
+              <button
+                onClick={() => { setCurrentScreen("dashboard"); setQueueFilter("all"); }}
+                className={`px-3 py-1.5 text-xs font-semibold flex items-center rounded-md transition-all ${
+                  currentScreen === "dashboard" ? "bg-white text-blue-700 shadow-sm" : "text-blue-100 hover:bg-blue-500/50 hover:text-white"
+                }`}
+              >
+                <Activity className="w-3.5 h-3.5 mr-1.5" />
+                Today's Work
+              </button>
+            )}
+            {["Service Manager", "Service Coordinator", "Front Desk"].includes(currentUser.role) && (
+              <button
+                onClick={() => setCurrentScreen("new_ticket")}
+                className={`px-3 py-1.5 text-xs font-semibold flex items-center rounded-md transition-all ${
+                  currentScreen === "new_ticket" ? "bg-white text-blue-700 shadow-sm" : "text-blue-100 hover:bg-blue-500/50 hover:text-white"
+                }`}
+              >
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                New Ticket
+              </button>
+            )}
+            {["Service Manager"].includes(currentUser.role) && (
+              <button
+                onClick={() => setCurrentScreen("reports")}
+                className={`px-3 py-1.5 text-xs font-semibold flex items-center rounded-md transition-all ${
+                  currentScreen === "reports" ? "bg-white text-blue-700 shadow-sm" : "text-blue-100 hover:bg-blue-500/50 hover:text-white"
+                }`}
+              >
+                <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                Reports Center
+              </button>
+            )}
             <button
               onClick={() => setCurrentScreen("agent_work")}
-              className={`px-3 h-12 text-xs font-semibold flex items-center transition-all ${
-                currentScreen === "agent_work" ? "bg-slate-800 border-b-2 border-orange-500 text-white" : "text-slate-300 hover:bg-slate-800"
+              className={`px-3 py-1.5 text-xs font-semibold flex items-center rounded-md transition-all ${
+                currentScreen === "agent_work" ? "bg-white text-blue-700 shadow-sm" : "text-blue-100 hover:bg-blue-500/50 hover:text-white"
               }`}
             >
-              <User className="w-3.5 h-3.5 mr-1.5 text-orange-400" />
+              <User className="w-3.5 h-3.5 mr-1.5" />
               My Work Queue
             </button>
-            <button
-              onClick={() => setCurrentScreen("custody_detail")}
-              className={`px-3 h-12 text-xs font-semibold flex items-center transition-all ${
-                currentScreen === "custody_detail" ? "bg-slate-800 border-b-2 border-orange-500 text-white" : "text-slate-300 hover:bg-slate-800"
-              }`}
-            >
-              <MapPin className="w-3.5 h-3.5 mr-1.5 text-pink-400" />
-              Custody Tracking
-            </button>
+            {["Service Manager", "Service Coordinator"].includes(currentUser.role) && (
+              <button
+                onClick={() => setCurrentScreen("custody_detail")}
+                className={`px-3 py-1.5 text-xs font-semibold flex items-center rounded-md transition-all ${
+                  currentScreen === "custody_detail" ? "bg-white text-blue-700 shadow-sm" : "text-blue-100 hover:bg-blue-500/50 hover:text-white"
+                }`}
+              >
+                <MapPin className="w-3.5 h-3.5 mr-1.5" />
+                Custody Tracking
+              </button>
+            )}
           </nav>
         </div>
 
         {/* User profile dropdown and Simulator Selector */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {/* Quick simulator screen jumper box */}
-          <div className="bg-slate-800 text-slate-100 flex items-center px-2 py-1 rounded border border-slate-700 text-[10px] gap-1 font-mono">
-            <span className="text-orange-400 uppercase font-bold">Simulator View Router:</span>
+          <div className="bg-blue-800 text-blue-100 flex items-center px-3 py-1.5 rounded-md shadow-inner text-[10px] gap-2 font-mono">
+            <span className="text-blue-200 uppercase font-bold tracking-widest hidden lg:inline">Simulator Role:</span>
             <select
               value={currentScreen}
               onChange={(e) => setCurrentScreen(e.target.value as any)}
-              className="bg-slate-950 text-white border-none py-0.5 px-1 rounded outline-none text-[11px] font-sans font-medium"
+              className="bg-blue-700 text-white border-none py-0.5 px-1 rounded outline-none text-[11px] font-sans font-medium appearance-none cursor-pointer"
             >
               <option value="login">1. Login Page</option>
               <option value="dashboard">2. Today's Work Dashboard</option>
@@ -794,25 +802,25 @@ export default function App() {
               <option value="work_center">7. Front Desk: Work Center</option>
               <option value="reports">8. Reports Center</option>
               <option value="custody_detail">9. Product Custody Detail</option>
-              <option value="qr_form">10. Customer QR Complaint Form</option>
-              <option value="manager_dashboard">11. Manager Overview Dashboard</option>
-              <option value="viewer_console">12. Viewer: Read-Only Console</option>
+              <option value="qr_form">10. Customer QR Form</option>
+              <option value="manager_dashboard">11. Manager Dashboard</option>
+              <option value="viewer_console">12. Viewer Console</option>
               <option value="create_receipt">13. Front Desk: Create Receipt</option>
               <option value="app_settings">14. System: App Settings</option>
-              <option value="brand_directory">15. Brand & Service Directory</option>
+              <option value="brand_directory">15. Brand Directory</option>
               <option value="crm_database">16. CRM Customer Database</option>
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 border-l border-blue-500 pl-4">
             <div className="text-right hidden sm:block">
-              <span className="block text-xs font-semibold leading-none">{currentUser.name}</span>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{currentUser.role}</span>
+              <span className="block text-xs font-semibold text-white leading-none mb-0.5">{currentUser.name}</span>
+              <span className="text-[9px] text-blue-200 font-bold uppercase tracking-wider">{currentUser.role}</span>
             </div>
             <img
               src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.seed}`}
               alt="User profile seed"
-              className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 cursor-pointer hover:border-orange-500"
+              className="w-9 h-9 rounded-full bg-blue-100 border-2 border-blue-400 cursor-pointer hover:border-white shadow-sm"
               onClick={() => {
                 if (currentUser.name === "Suresh Kumar") {
                   setCurrentUser({ name: "Ramesh Nair", role: "Service Manager", seed: "Ramesh" });
@@ -830,160 +838,117 @@ export default function App() {
         
         {/* SIDEBAR QUEUES - Only visible if not in client/viewer specific views (qr_form, viewer_console, login) */}
         {currentScreen !== "login" && currentScreen !== "qr_form" && currentScreen !== "viewer_console" && (
-          <aside className="w-52 bg-slate-100 border-r border-slate-200 p-2 overflow-y-auto flex flex-col gap-1 shrink-0">
-            <div className="px-2 py-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">Main Queues</div>
+          <aside className="hidden md:flex w-[260px] bg-white border-r border-slate-200 p-4 overflow-y-auto flex-col gap-1.5 shrink-0 shadow-sm z-0">
+            <div className="px-2 py-1 text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Main Queues</div>
             
             <button
               onClick={() => { setQueueFilter("all"); setCurrentScreen("dashboard"); }}
-              className={`flex items-center justify-between px-2 py-1 rounded text-left text-xs ${
-                queueFilter === "all" && currentScreen === "dashboard" ? "bg-slate-300 text-slate-900 font-bold" : "hover:bg-slate-200 text-slate-700"
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                queueFilter === "all" && currentScreen === "dashboard" ? "bg-blue-50 text-blue-700 font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
               }`}
             >
-              <span className="flex items-center gap-1.5"><ClipboardList className="w-3.5 h-3.5 text-slate-600" /> All Queries</span>
-              <span className="bg-slate-400/20 px-1.5 rounded-full text-[10px] text-slate-700">{tickets.length}</span>
+              <span className="flex items-center gap-2.5"><ClipboardList className={`w-4 h-4 ${queueFilter === "all" && currentScreen === "dashboard" ? "text-blue-600" : "text-slate-400"}`} /> All Queries</span>
+              <span className="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full text-xs text-slate-600">{tickets.length}</span>
             </button>
 
             <button
               onClick={() => { setQueueFilter("new"); setCurrentScreen("dashboard"); }}
-              className={`flex items-center justify-between px-2 py-1.5 rounded text-left text-xs ${
-                queueFilter === "new" ? "bg-blue-100 text-blue-800 font-bold" : "hover:bg-slate-200 text-slate-700"
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                queueFilter === "new" ? "bg-blue-50 text-blue-700 font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
               }`}
             >
-              <span className="flex items-center gap-1.5"><Plus className="w-3.5 h-3.5 text-blue-500" /> New Complaints</span>
-              <span className="bg-blue-200 text-blue-800 px-1.5 rounded-full text-[10px]">{tickets.filter(t => t.status === "New" || t.status === "Registration Pending").length}</span>
+              <span className="flex items-center gap-2.5"><Plus className={`w-4 h-4 ${queueFilter === "new" ? "text-blue-600" : "text-blue-500"}`} /> New Complaints</span>
+              <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-bold">{tickets.filter(t => t.status === "New" || t.status === "Registration Pending").length}</span>
             </button>
 
             <button
               onClick={() => { setQueueFilter("reg_pending"); setCurrentScreen("dashboard"); }}
-              className={`flex items-center justify-between px-2 py-1.5 rounded text-left text-xs ${
-                queueFilter === "reg_pending" ? "bg-orange-100 text-orange-850 font-bold" : "hover:bg-slate-200 text-slate-700"
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                queueFilter === "reg_pending" ? "bg-orange-50 text-orange-700 font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
               }`}
             >
-              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-orange-500" /> Registration Pending</span>
-              <span className="bg-orange-200 text-orange-850 px-1.5 rounded-full text-[10px]">{tickets.filter(t => t.status === "Registration Pending").length}</span>
+              <span className="flex items-center gap-2.5"><Clock className={`w-4 h-4 ${queueFilter === "reg_pending" ? "text-orange-600" : "text-orange-500"}`} /> Pending Wait</span>
+              <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full text-xs font-bold">{tickets.filter(t => t.status === "Registration Pending").length}</span>
             </button>
 
             <button
               onClick={() => { setQueueFilter("brand_reg"); setCurrentScreen("dashboard"); }}
-              className={`flex items-center justify-between px-2 py-1.5 rounded text-left text-xs font-medium ${
-                queueFilter === "brand_reg" ? "bg-indigo-100 text-indigo-900" : "hover:bg-slate-200 text-slate-700"
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                queueFilter === "brand_reg" ? "bg-purple-50 text-purple-700 font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
               }`}
             >
-              <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-indigo-500" /> Brand Registered</span>
-              <span className="bg-indigo-200 px-1.5 rounded-full text-[10px] text-indigo-800">{tickets.filter(t => t.status === "Brand Registered").length}</span>
-            </button>
-
-            <button
-              onClick={() => { setQueueFilter("waiting_cust"); setCurrentScreen("dashboard"); }}
-              className={`flex items-center justify-between px-2 py-1.5 rounded text-left text-xs ${
-                queueFilter === "waiting_cust" ? "bg-amber-100 text-amber-900" : "hover:bg-slate-200 text-slate-700"
-              }`}
-            >
-              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-amber-500" /> Waiting on Customer</span>
-              <span className="bg-amber-200 text-amber-800 px-1.5 rounded-full text-[10px]">{tickets.filter(t => t.followUpStatus === "Wait: Cust").length}</span>
+              <span className="flex items-center gap-2.5"><Shield className={`w-4 h-4 ${queueFilter === "brand_reg" ? "text-purple-600" : "text-purple-500"}`} /> Brand / Registration</span>
+              <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-bold">{tickets.filter(t => t.status === "Brand Registered").length}</span>
             </button>
 
             <button
               onClick={() => { setQueueFilter("waiting_parts"); setCurrentScreen("dashboard"); }}
-              className={`flex items-center justify-between px-2 py-1.5 rounded text-left text-xs ${
-                queueFilter === "waiting_parts" ? "bg-slate-200 text-slate-900 font-bold" : "hover:bg-slate-200 text-slate-700"
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                queueFilter === "waiting_parts" ? "bg-orange-50 text-orange-700 font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
               }`}
             >
-              <span className="flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-slate-600" /> Waiting on Part</span>
-              <span className="bg-slate-350 px-1.5 text-slate-800 rounded-full text-[10px]">{tickets.filter(t => t.status === "Waiting on Part").length}</span>
+              <span className="flex items-center gap-2.5"><Wrench className={`w-4 h-4 ${queueFilter === "waiting_parts" ? "text-orange-600" : "text-slate-400"}`} /> Waiting on Part</span>
+              <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full text-xs font-bold">{tickets.filter(t => t.status === "Waiting on Part").length}</span>
             </button>
 
             <button
               onClick={() => { setQueueFilter("ready_pickup"); setCurrentScreen("ready_pickup"); }}
-              className={`flex items-center justify-between px-2 py-1.5 rounded text-left text-xs ${
-                currentScreen === "ready_pickup" ? "bg-green-100 text-green-800 font-bold" : "hover:bg-slate-200 text-slate-700"
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                currentScreen === "ready_pickup" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
               }`}
             >
-              <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-green-600" /> Ready for Pickup</span>
-              <span className="bg-green-200 text-green-800 px-1.5 rounded-full text-[10px]">{stats.readyPic}</span>
+              <span className="flex items-center gap-2.5"><CheckCircle className={`w-4 h-4 ${currentScreen === "ready_pickup" ? "text-green-600" : "text-green-500"}`} /> Ready for Pickup</span>
+              <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-bold">{stats.readyPic}</span>
             </button>
 
-            <div className="px-2 py-1 mt-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Specialized</div>
-            <button
-              onClick={() => setCurrentScreen("work_center")}
-              className={`flex items-center justify-between px-2 py-1.5 rounded text-left text-xs ${
-                currentScreen === "work_center" ? "bg-slate-350 text-slate-900" : "hover:bg-slate-200 text-slate-700"
-              }`}
-            >
-              <span className="flex items-center gap-1.5"><Building className="w-3.5 h-3.5 text-slate-500" /> Bulk Front Desk</span>
-              <span className="text-slate-400 text-[10px] font-mono">LIVE</span>
-            </button>
-
+            <div className="px-2 py-1 mt-4 text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Alerts</div>
             <button
               onClick={() => { setQueueFilter("repeat"); setCurrentScreen("dashboard"); }}
-              className={`flex items-center justify-between px-2 py-1.5 rounded text-left text-xs ${
-                queueFilter === "repeat" ? "bg-red-150 text-red-800 font-bold" : "hover:bg-slate-200 text-slate-700 text-red-650"
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                queueFilter === "repeat" ? "bg-red-50 text-red-700 font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
               }`}
             >
-              <span className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Repeated Tickets</span>
-              <span className="bg-red-100 text-red-650 px-1.5 rounded-full text-[10px] font-black">{tickets.filter(t => t.isRepeat).length}</span>
+              <span className="flex items-center gap-2.5"><AlertTriangle className={`w-4 h-4 ${queueFilter === "repeat" ? "text-red-600" : "text-red-500"}`} /> Overdue / Urgent</span>
+              <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-bold">{tickets.filter(t => t.isRepeat).length}</span>
             </button>
 
-            <div className="px-2 py-1 mt-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilities & Roles</div>
-            <button
-              onClick={() => setCurrentScreen("manager_dashboard")}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-left text-xs ${
-                currentScreen === "manager_dashboard" ? "bg-slate-700 text-white font-bold" : "hover:bg-slate-200 text-slate-700"
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5 text-orange-400" /> Manager Console
-            </button>
+            <div className="px-2 py-1 mt-4 text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Terminal Config</div>
+            {currentUser.role === "Service Manager" && (
+              <button
+                onClick={() => setCurrentScreen("manager_dashboard")}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  currentScreen === "manager_dashboard" ? "bg-slate-800 text-white font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
+                }`}
+              >
+                <Shield className={`w-4 h-4 ${currentScreen === "manager_dashboard" ? "text-white" : "text-slate-400"}`} /> Manager Console
+              </button>
+            )}
 
             <button
               onClick={() => setCurrentScreen("qr_form")}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-left text-xs ${
-                currentScreen === "qr_form" ? "bg-orange-100 text-orange-900" : "hover:bg-slate-200 text-slate-700"
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                currentScreen === "qr_form" ? "bg-slate-800 text-white font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
               }`}
             >
-              <QrCode className="w-3.5 h-3.5 text-orange-500" /> Customer QR Form
-            </button>
-
-            <button
-              onClick={() => setCurrentScreen("viewer_console")}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-left text-xs ${
-                currentScreen === "viewer_console" ? "bg-slate-800 text-white" : "hover:bg-slate-200 text-slate-700"
-              }`}
-            >
-              <Monitor className="w-3.5 h-3.5 text-indigo-400" /> Store Waiting Board
+              <QrCode className={`w-4 h-4 ${currentScreen === "qr_form" ? "text-white" : "text-slate-400"}`} /> Show Web Form
             </button>
             
-            <button
-              onClick={() => setCurrentScreen("app_settings")}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-left text-xs ${
-                currentScreen === "app_settings" ? "bg-slate-800 text-white" : "hover:bg-slate-200 text-slate-700"
-              }`}
-            >
-              <Settings className="w-3.5 h-3.5 text-slate-500" /> App Settings
-            </button>
-
-            <button
-              onClick={() => setCurrentScreen("brand_directory")}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-left text-xs ${
-                currentScreen === "brand_directory" ? "bg-slate-800 text-white" : "hover:bg-slate-200 text-slate-700"
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5 text-blue-500" /> Brand Directory
-            </button>
-
-            <button
-              onClick={() => setCurrentScreen("crm_database")}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-left text-xs ${
-                currentScreen === "crm_database" ? "bg-slate-800 text-white" : "hover:bg-slate-200 text-slate-700"
-              }`}
-            >
-              <Users className="w-3.5 h-3.5 text-purple-500" /> CRM Database
-            </button>
+            {currentUser.role === "Service Manager" && (
+              <button
+                onClick={() => setCurrentScreen("app_settings")}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  currentScreen === "app_settings" ? "bg-slate-800 text-white font-bold" : "hover:bg-slate-100 text-slate-600 font-medium"
+                }`}
+              >
+                <Settings className={`w-4 h-4 ${currentScreen === "app_settings" ? "text-white" : "text-slate-400"}`} /> Platform Config
+              </button>
+            )}
 
             <button
               onClick={() => setCurrentScreen("login")}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-left text-xs text-red-600 hover:bg-red-50 mt-auto`}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-red-600 hover:bg-red-50 font-bold mt-auto`}
             >
-              <LogOut className="w-3.5 h-3.5 text-red-500" /> Exit Terminal
+              <LogOut className="w-4 h-4 text-red-500" /> Switch Profile
             </button>
           </aside>
         )}
@@ -1012,7 +977,7 @@ export default function App() {
                       <button
                         onClick={() => setCurrentUser({ name: "Suresh Kumar", role: "Service Coordinator", seed: "Suresh" })}
                         className={`p-2 border rounded text-left text-xs flex flex-col ${
-                          currentUser.name === "Suresh Kumar" ? "border-orange-500 bg-orange-50/40 font-bold" : "border-slate-200 hover:bg-slate-50"
+                          currentUser.name === "Suresh Kumar" ? "border-blue-500 bg-blue-50/40 font-bold" : "border-slate-200 hover:bg-slate-50"
                         }`}
                       >
                         <span>Suresh Kumar</span>
@@ -1021,11 +986,38 @@ export default function App() {
                       <button
                         onClick={() => setCurrentUser({ name: "Ramesh Nair", role: "Service Manager", seed: "Ramesh" })}
                         className={`p-2 border rounded text-left text-xs flex flex-col ${
-                          currentUser.name === "Ramesh Nair" ? "border-orange-500 bg-orange-50/40 font-bold" : "border-slate-200 hover:bg-slate-50"
+                          currentUser.name === "Ramesh Nair" ? "border-blue-500 bg-blue-50/40 font-bold" : "border-slate-200 hover:bg-slate-50"
                         }`}
                       >
                         <span>Ramesh Nair</span>
                         <span className="text-[9px] text-slate-400 font-normal">Service Manager</span>
+                      </button>
+                      <button
+                        onClick={() => setCurrentUser({ name: "Anita Sharma", role: "Front Desk", seed: "Anita" })}
+                        className={`p-2 border rounded text-left text-xs flex flex-col ${
+                          currentUser.name === "Anita Sharma" ? "border-blue-500 bg-blue-50/40 font-bold" : "border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span>Anita Sharma</span>
+                        <span className="text-[9px] text-slate-400 font-normal">Front Desk</span>
+                      </button>
+                      <button
+                        onClick={() => setCurrentUser({ name: "Vikram Gupta", role: "Helpdesk Agent", seed: "Vikram" })}
+                        className={`p-2 border rounded text-left text-xs flex flex-col ${
+                          currentUser.name === "Vikram Gupta" ? "border-blue-500 bg-blue-50/40 font-bold" : "border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span>Vikram Gupta</span>
+                        <span className="text-[9px] text-slate-400 font-normal">Helpdesk Agent</span>
+                      </button>
+                      <button
+                        onClick={() => setCurrentUser({ name: "Live Display", role: "Viewer", seed: "Viewer" })}
+                        className={`p-2 border rounded text-left text-xs flex flex-col ${
+                          currentUser.name === "Live Display" ? "border-blue-500 bg-blue-50/40 font-bold" : "border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span>Live Display</span>
+                        <span className="text-[9px] text-slate-400 font-normal">Viewer / Read Only</span>
                       </button>
                     </div>
                   </div>
@@ -1041,13 +1033,22 @@ export default function App() {
                   </div>
                   <button
                     onClick={() => {
-                      setCurrentScreen("dashboard");
+                      if (currentUser.role === "Viewer") setCurrentScreen("viewer_console");
+                      else setCurrentScreen("dashboard");
                       alert(`Successfully Authenticated as ${currentUser.name} (${currentUser.role})`);
                     }}
                     className="w-full py-2 bg-slate-900 text-white font-bold text-xs uppercase rounded hover:bg-slate-800 transition-colors"
                   >
                     Enter System Workspace
                   </button>
+                  <div className="text-center pt-2 border-t border-slate-100">
+                    <button
+                      onClick={() => setCurrentScreen("qr_form")}
+                      className="text-[10px] text-blue-600 font-bold uppercase tracking-wider hover:underline"
+                    >
+                      Open Public QR Complaint Kiosk Form
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1154,7 +1155,7 @@ export default function App() {
                               <button
                                 onClick={() => {
                                   setSelectedTicketId(t.id);
-                                  setCurrentScreen("ticket_detail");
+                                  setActiveModal("ticket_detail_drawer");
                                 }}
                                 className="underline hover:text-blue-800 text-left font-mono font-bold"
                               >
@@ -1188,17 +1189,15 @@ export default function App() {
                             </td>
                             <td className="px-3 py-2">
                               <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${
-                                t.status === "Ready for Pickup"
-                                  ? "bg-green-100 text-green-800 border-green-200"
-                                  : t.status === "Waiting on Part"
-                                  ? "bg-amber-100 text-amber-800 border-amber-200"
-                                  : t.status === "Brand Registered"
-                                  ? "bg-blue-100 text-blue-800 border-blue-200"
-                                  : t.status === "Registration Pending"
-                                  ? "bg-orange-100 text-orange-850 border-orange-200"
-                                  : t.status === "Closed"
-                                  ? "bg-gray-100 text-gray-500 border-gray-200"
-                                  : "bg-blue-50 text-blue-700 border-blue-150"
+                                t.status === "Ready for Pickup" || t.status === "Closed"
+                                  ? "bg-green-100 text-green-700 border-green-200"
+                                  : t.status === "Waiting on Part" || t.status === "Waiting on Customer"
+                                  ? "bg-orange-100 text-orange-700 border-orange-200"
+                                  : t.status === "Brand Registered" || t.status === "Registration Pending"
+                                  ? "bg-purple-100 text-purple-700 border-purple-200"
+                                  : t.status === "New" || t.status === "In Progress"
+                                  ? "bg-blue-100 text-blue-700 border-blue-200"
+                                  : "bg-slate-100 text-slate-700 border-slate-200"
                               }`}>
                                 {t.status}
                               </span>
@@ -1218,7 +1217,7 @@ export default function App() {
                                 <button
                                   onClick={() => {
                                     setSelectedTicketId(t.id);
-                                    setCurrentScreen("ticket_detail");
+                                    setActiveModal("ticket_detail_drawer");
                                   }}
                                   className="px-2 py-0.5 text-[10px] bg-white border border-slate-200 rounded hover:bg-slate-200 transition-all font-semibold"
                                 >
@@ -1303,7 +1302,7 @@ export default function App() {
                             <button
                               onClick={() => {
                                 setSelectedTicketId(t.id);
-                                setCurrentScreen("ticket_detail");
+                                setActiveModal("ticket_detail_drawer");
                               }}
                               className="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] text-slate-700 hover:bg-slate-100"
                             >
@@ -1519,7 +1518,7 @@ export default function App() {
                         key={t.id}
                         onClick={() => {
                           setSelectedTicketId(t.id);
-                          setCurrentScreen("ticket_detail");
+                          setActiveModal("ticket_detail_drawer");
                         }}
                         className={`border p-3 rounded cursor-pointer transition-all hover:shadow-md ${
                           t.followUpDate === "URGENT" || t.followUpDate === "Overdue"
@@ -1551,278 +1550,8 @@ export default function App() {
             </div>
           )}
 
-          {/* ==================== 6. TICKET DETAIL VIEW ==================== */}
-          {currentScreen === "ticket_detail" && (
-            <div id="screen-ticket-detail" className="bg-white border border-slate-200 rounded p-4 flex-1 flex flex-col overflow-auto shadow-sm">
-              <div className="border-b border-slate-200 pb-2.5 mb-3.5 flex flex-wrap justify-between items-center gap-2 shrink-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-mono font-black text-slate-900 border-r border-slate-300 pr-3">{selectedTicket.id}</span>
-                  <div>
-                    <span className="text-xs font-bold text-slate-700 block leading-tight">
-                      {selectedTicket.brand.toUpperCase()} SERVICE REGISTRATION FILE
-                    </span>
-                    <span className="text-[10px] text-slate-400 uppercase">Assigned Agent: {selectedTicket.assignedAgent}</span>
-                    {selectedTicket.crmAutoCreated && (
-                      <span className="ml-2 inline-flex items-center gap-1 bg-indigo-50 border border-indigo-200 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
-                        <Network className="w-2.5 h-2.5" /> CRM Synced
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      const phoneNumber = prompt("Enter WhatsApp number to share this ticket:");
-                      if (phoneNumber) {
-                        const message = `*Ticket ID*: ${selectedTicket.id}%0A*Brand*: ${selectedTicket.brand}%0A*Product*: ${selectedTicket.productName} - ${selectedTicket.model}%0A*Customer*: ${selectedTicket.customerName} (${selectedTicket.phone})%0A*Status*: ${selectedTicket.status}%0A*Description*: ${selectedTicket.problemDescription}`;
-                        window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
-                      }
-                    }}
-                    className="px-2.5 py-1 text-green-700 hover:bg-green-50 border border-green-200 rounded text-[10px] uppercase font-extrabold flex items-center gap-1.5"
-                  >
-                    <Share2 className="w-3.5 h-3.5" /> Share via WA
-                  </button>
-                  <button
-                    onClick={() => { setCurrentScreen("dashboard"); }}
-                    className="px-2.5 py-1 text-slate-700 hover:bg-slate-100 border border-slate-200 rounded text-xs uppercase font-extrabold flex items-center gap-1.5"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" /> Back
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1">
-                {/* Left card columns */}
-                <div className="lg:col-span-2 space-y-3.5">
-                  
-                  {/* Basic user info desk */}
-                  <div className="bg-slate-50 border border-slate-200 p-3 rounded shadow-sm">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-1 mb-2">Customer & Device Dossier</h4>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 text-xs leading-5">
-                      <div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase">Registered Customer</div>
-                        <div className="font-bold text-slate-900">{selectedTicket.customerName}</div>
-                        <div className="text-slate-500">{selectedTicket.phone}</div>
-                        {selectedTicket.altPhone && <div className="text-slate-500 text-[10px]">Alt: {selectedTicket.altPhone}</div>}
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase">Equipment Profile</div>
-                        <div className="font-bold text-slate-900">{selectedTicket.brand} {selectedTicket.productName}</div>
-                        <div className="text-slate-500 italic">Model: {selectedTicket.model || "N/A"}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase">Warranty Status</div>
-                        <div className={`font-mono px-1 rounded inline-block text-[11px] font-bold ${selectedTicket.warrantyStatus === 'In Warranty' ? 'bg-green-100 text-green-800' : selectedTicket.warrantyStatus === 'Out of Warranty' ? 'bg-red-100 text-red-800' : 'bg-slate-200 text-slate-700'}`}>{selectedTicket.warrantyStatus || "Unknown"}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase">Serial Plate Key</div>
-                        <div className="font-mono bg-slate-200 text-slate-700 px-1 rounded inline-block text-[11px]">{selectedTicket.serialNo || "NO_SERIAL"}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase">Terminal Location Custody</div>
-                        <div className="font-bold text-slate-900 flex items-center gap-1">
-                          <MapPin className="w-3 text-pink-500" /> {selectedTicket.physicalLocation || "Not Configured"}
-                        </div>
-                      </div>
-                    </div>
-                    {/* Previous complaint history */}
-                    {tickets.filter(t => t.phone === selectedTicket.phone && t.id !== selectedTicket.id).length > 0 && (
-                      <div className="mt-3 pt-2 border-t border-slate-200">
-                        <div className="text-[10px] font-bold text-orange-600 uppercase mb-1 flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> Previous Complaint History Found
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {tickets.filter(t => t.phone === selectedTicket.phone && t.id !== selectedTicket.id).map(prev => (
-                            <div key={prev.id} className="bg-orange-50 border border-orange-200 rounded px-2 py-1 text-[10px] font-sans">
-                              <span className="font-mono font-bold text-orange-800">{prev.id}</span> - {prev.brand} {prev.productName} ({prev.status})
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Complaint report */}
-                  <div className="bg-white border border-slate-210 p-3 rounded shadow-sm">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-1 mb-2">Problem Statement & Repair Logs</h4>
-                    <div className="text-xs whitespace-pre-wrap font-sans bg-slate-900 text-slate-100 p-2.5 rounded font-mono text-[11px] leading-relaxed">
-                      {selectedTicket.problemDescription}
-                    </div>
-
-                    {selectedTicket.resolutionDetails && (
-                      <div className="mt-2.5 bg-green-50 border border-green-200 p-2.5 rounded text-xs">
-                        <div className="text-[10px] font-black text-green-700 uppercase">Resolution details logged</div>
-                        <p className="font-medium text-green-950 mt-1">{selectedTicket.resolutionDetails}</p>
-                        {selectedTicket.chargeCollected && (
-                          <p className="text-[10px] text-green-700 font-bold mt-1 font-mono uppercase tracking-widest">
-                            Fees: INR {selectedTicket.chargeCollected} /- {selectedTicket.materialCode && `| Part: ${selectedTicket.materialCode}`}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Timeline progress flow */}
-                  <div className="bg-white border border-slate-200 p-3 rounded relative">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-1 mb-3">Service Timeline Audit Track</h4>
-                    <div className="relative border-l-2 border-slate-200 pl-4 space-y-3 font-sans text-xs">
-                      <div className="relative">
-                        <span className="w-2.5 h-2.5 bg-orange-500 rounded-full absolute -left-[19.5px] top-1"></span>
-                        <div className="font-bold text-slate-800">Job Ticket Raised ({selectedTicket.id})</div>
-                        <div className="text-[10px] text-slate-400 uppercase font-mono">Assigned initially to {selectedTicket.assignedAgent}</div>
-                      </div>
-
-                      {selectedTicket.status !== "New" && (
-                        <div className="relative">
-                          <span className="w-2.5 h-2.5 bg-indigo-500 rounded-full absolute -left-[19.5px] top-1"></span>
-                          <div className="font-bold text-slate-800">Brand Desk Intake Cleared</div>
-                          <div className="text-[10px] text-slate-400">Pushed state to: {selectedTicket.status}</div>
-                        </div>
-                      )}
-
-                      {selectedTicket.expectedPartArrival && (
-                        <div className="relative">
-                          <span className="w-2.5 h-2.5 bg-amber-500 rounded-full absolute -left-[19.5px] top-1"></span>
-                          <div className="font-bold text-amber-700">Spare Part Ordered & Logged</div>
-                          <div className="text-[10px] text-slate-500 font-mono">Part Vendor: {selectedTicket.vendorName} | Expected ETA: {selectedTicket.expectedPartArrival}</div>
-                        </div>
-                      )}
-
-                      {selectedTicket.notificationSent && selectedTicket.notificationSent !== "None" && (
-                        <div className="relative border border-slate-200 bg-slate-50 p-2 rounded -ml-2 mb-2">
-                          <span className="w-2.5 h-2.5 bg-blue-500 rounded-full absolute -left-[13.5px] top-2.5"></span>
-                          <div className="font-bold text-blue-700 text-[11px] flex items-center gap-1">
-                            {selectedTicket.notificationSent === "WhatsApp" || selectedTicket.notificationSent === "Both" ? <Smartphone className="w-3 h-3" /> : null}
-                            {selectedTicket.notificationSent === "Email" || selectedTicket.notificationSent === "Both" ? <Mail className="w-3 h-3" /> : null}
-                            Automated Customer Update Sent
-                          </div>
-                          <div className="text-[9px] text-slate-500 font-mono mt-0.5">Dispatched via {selectedTicket.notificationSent} to {selectedTicket.phone}</div>
-                        </div>
-                      )}
-
-                      {selectedTicket.status === "Closed" && (
-                        <div className="relative animate-pulse">
-                          <span className="w-2.5 h-2.5 bg-green-500 rounded-full absolute -left-[19.5px] top-1"></span>
-                          <div className="font-bold text-green-700">Client Handover Closed</div>
-                          <div className="text-[10px] text-slate-450 uppercase">Verified signature & payment collected successfully.</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Right quick operator controls panel: Modals triggers */}
-                <div className="space-y-3 font-sans">
-                  
-                  {/* Status Indicator detail */}
-                  <div className="bg-slate-900 text-white p-3.5 rounded-lg shadow-md">
-                    <span className="text-[9px] font-bold text-slate-400 block uppercase tracking-wider mb-1">State Machine</span>
-                    <span className="text-sm font-bold text-orange-400 block">{selectedTicket.status.toUpperCase()}</span>
-                    
-                    <div className="border-t border-slate-700 mt-2 pt-2 text-xs space-y-1.5 text-slate-300">
-                      <div>SLA Deadline: <strong className="text-white font-bold">{selectedTicket.followUpDate} {selectedTicket.followUpTime ? `at ${selectedTicket.followUpTime}` : ""}</strong></div>
-                      <div>Action Status: <span className="font-mono text-[10px] bg-slate-800 px-1 py-0.5 rounded text-indigo-300 font-bold uppercase">{selectedTicket.followUpStatus}</span></div>
-                      <div>Invoice Proof: <span className={`font-bold ${selectedTicket.invoiceStatus === "Missing" ? "text-red-400" : "text-green-400"}`}>{selectedTicket.invoiceStatus || "Found"}</span></div>
-                    </div>
-                  </div>
-
-                  {/* Operation Actions */}
-                  <div className="bg-white border border-slate-205 p-3 rounded-lg shadow-sm">
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-1 mb-2.5">
-                      Service Desk Actions
-                    </h5>
-                    
-                    <div className="flex flex-col gap-1.5 font-sans">
-                      
-                      {/* Register Complaint */}
-                      <button
-                        onClick={() => {
-                          setBrandTicketIdInput(selectedTicket.serialNo || "");
-                          setActiveModal("register_complaint");
-                        }}
-                        className="py-1.5 px-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded text-left flex items-center justify-between"
-                      >
-                        <span>1. Register Brand Desk</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Invoice Override modal */}
-                      {selectedTicket.invoiceStatus === "Missing" && (
-                        <button
-                          onClick={() => {
-                            setActiveModal("need_invoice");
-                          }}
-                          className="py-1.5 px-2 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold rounded text-left flex items-center justify-between"
-                        >
-                          <span>2. Handle Invoice Query [Missing]</span>
-                          <AlertTriangle className="w-3.5 h-3.5 text-slate-900" />
-                        </button>
-                      )}
-
-                      {/* Service Follow-up */}
-                      <button
-                        onClick={() => {
-                          setFollowUpStatusValue(selectedTicket.followUpStatus);
-                          setActiveModal("service_follow_up");
-                        }}
-                        className="py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded text-left flex items-center justify-between"
-                      >
-                        <span>3. Log Service Follow-up Dialogue</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Waiting on Part */}
-                      <button
-                        onClick={() => {
-                          setActiveModal("waiting_on_part");
-                        }}
-                        className="py-1.5 px-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded text-left flex items-center justify-between"
-                      >
-                        <span>4. Mark Awaiting Spare Part</span>
-                        <Wrench className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Close Ticket */}
-                      <button
-                        onClick={() => {
-                          setActiveModal("close_ticket");
-                        }}
-                        className="py-1.5 px-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded text-left flex items-center justify-between"
-                      >
-                        <span>5. Final Resolution & Close Ticket</span>
-                        <CheckCircle className="w-3.5 h-3.5" />
-                      </button>
-
-                      <div className="border-t border-slate-205 my-2"></div>
-
-                      {/* Job sheet printer */}
-                      <button
-                        onClick={() => {
-                          setCurrentScreen("create_receipt");
-                        }}
-                        className="py-1.5 px-2 border border-slate-250 text-slate-700 bg-white hover:bg-slate-100 text-xs font-bold rounded text-left flex items-center gap-2"
-                      >
-                        <Printer className="w-3.5 h-3.5 text-slate-600" /> Print Walk-In Receipt Form
-                      </button>
-
-                      {/* Warehouse rack tracking */}
-                      <button
-                        onClick={() => {
-                          setCurrentScreen("custody_detail");
-                        }}
-                        className="py-1.5 px-2 border border-slate-250 text-slate-700 bg-white hover:bg-slate-100 text-xs font-bold rounded text-left flex items-center gap-2"
-                      >
-                        <MapPin className="w-3.5 h-3.5 text-slate-600" /> Storage Rack Custody tags
-                      </button>
-
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          )}
+          {/* ==================== 6. TICKET DETAIL VIEW DELETED ==================== */}
+          {/* Note: ticket_detail is now a drawer overlay at the end of the file */}
 
           {/* ==================== 7. FRONT DESK: WORK CENTER (BULK) ==================== */}
           {currentScreen === "work_center" && (
@@ -3068,6 +2797,245 @@ export default function App() {
         </div>
       )}
 
+      {/* 6. TICKET DETAIL DRAWER */}
+      {activeModal === "ticket_detail_drawer" && selectedTicket && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setActiveModal(null)}
+            className="fixed inset-0 bg-slate-900/20 backdrop-blur-[1px] z-40 transition-opacity"
+          />
+          
+          {/* Right Drawer */}
+          <div
+            id="drawer-ticket-detail"
+            className="fixed top-0 right-0 h-full w-[450px] max-w-[90vw] bg-white border-l border-slate-200 shadow-2xl z-50 flex flex-col overflow-hidden animate-in slide-in-from-right-full duration-300"
+          >
+            {/* Drawer Header */}
+            <div className="bg-[#2563eb] text-white p-4 flex justify-between items-center shrink-0 shadow-sm relative z-10">
+              <div>
+                <h2 className="text-[10px] uppercase tracking-widest text-blue-200 font-bold mb-0.5">Lavanya Service Ticket</h2>
+                <div className="text-xl font-black flex items-center gap-2 leading-none">
+                  {selectedTicket.id}
+                  {selectedTicket.isRepeat && (
+                    <span className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full tracking-widest uppercase shadow-sm font-bold">
+                      Repeat Fault
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button onClick={() => setActiveModal(null)} className="p-1.5 hover:bg-blue-700 rounded-full transition-colors">
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+            
+            {/* Quick Action Strip */}
+            <div className={`bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center gap-2 overflow-x-auto shrink-0 shadow-sm z-0 ${currentUser.role === 'Viewer' ? 'hidden' : ''}`}>
+              
+              {["Service Manager"].includes(currentUser.role) && (
+                <button
+                  onClick={() => {
+                    setBrandTicketIdInput(selectedTicket.serialNo || "");
+                    setActiveModal("register_complaint");
+                  }}
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-[10px] uppercase font-bold rounded hover:bg-slate-100 flex items-center gap-1.5 shadow-sm whitespace-nowrap transition-colors"
+                >
+                  <Network className="w-3.5 h-3.5 text-indigo-500" />
+                  Reg Brand
+                </button>
+              )}
+
+              {["Service Manager", "Service Coordinator", "Helpdesk Agent"].includes(currentUser.role) && (
+                <button
+                  onClick={() => {
+                    setFollowUpStatusValue(selectedTicket.followUpStatus);
+                    setActiveModal("service_follow_up");
+                  }}
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-[10px] uppercase font-bold rounded hover:bg-slate-100 flex items-center gap-1.5 shadow-sm whitespace-nowrap transition-colors"
+                >
+                  <Smartphone className="w-3.5 h-3.5 text-blue-500" />
+                  Log Call
+                </button>
+              )}
+
+              {["Service Manager", "Service Coordinator"].includes(currentUser.role) && (
+                <button
+                  onClick={() => setActiveModal("waiting_on_part")}
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-[10px] uppercase font-bold rounded hover:bg-slate-100 flex items-center gap-1.5 shadow-sm whitespace-nowrap transition-colors"
+                >
+                  <Wrench className="w-3.5 h-3.5 text-orange-500" />
+                  Wait Part
+                </button>
+              )}
+
+              {["Service Manager", "Service Coordinator"].includes(currentUser.role) && (
+                <button
+                  onClick={() => setActiveModal("need_invoice")}
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-[10px] uppercase font-bold rounded hover:bg-slate-100 flex items-center gap-1.5 shadow-sm whitespace-nowrap transition-colors"
+                >
+                  <FileImage className="w-3.5 h-3.5 text-red-500" />
+                  Invoice
+                </button>
+              )}
+
+              {(selectedTicket.type === "Store" && !selectedTicket.receiptNumber && ["Service Manager", "Service Coordinator", "Front Desk"].includes(currentUser.role)) && (
+                <button
+                  onClick={() => setActiveModal("create_receipt")}
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-[10px] uppercase font-bold rounded hover:bg-slate-100 flex items-center gap-1.5 shadow-sm whitespace-nowrap transition-colors"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-pink-500" />
+                  Receipt
+                </button>
+              )}
+
+              {["Service Manager", "Service Coordinator"].includes(currentUser.role) && (
+                <button
+                  onClick={() => setActiveModal("ready_for_pickup")}
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-[10px] uppercase font-bold rounded hover:bg-green-50 hover:border-green-200 hover:text-green-700 flex items-center gap-1.5 shadow-sm whitespace-nowrap transition-colors"
+                >
+                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                  Ready Mark
+                </button>
+              )}
+
+              {["Service Manager", "Service Coordinator"].includes(currentUser.role) && (
+                <button
+                  onClick={() => setActiveModal("close_ticket")}
+                  className="px-3 py-1.5 bg-slate-800 border border-slate-800 text-white text-[10px] uppercase font-bold rounded hover:bg-slate-900 flex items-center gap-1.5 shadow-sm whitespace-nowrap transition-colors"
+                >
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  Close
+                </button>
+              )}
+            </div>
+
+            {/* Drawer Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+              
+              {/* Status Overview Card */}
+              <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider">Current State</div>
+                    <span className={`px-2.5 py-1 rounded text-[11px] font-bold border ${
+                      selectedTicket.status === "Ready for Pickup" || selectedTicket.status === "Closed"
+                        ? "bg-green-100 text-green-700 border-green-200"
+                        : selectedTicket.status === "Waiting on Part" || selectedTicket.status === "Waiting on Customer"
+                        ? "bg-orange-100 text-orange-700 border-orange-200"
+                        : selectedTicket.status === "Brand Registered" || selectedTicket.status === "Registration Pending"
+                        ? "bg-purple-100 text-purple-700 border-purple-200"
+                        : selectedTicket.status === "New" || selectedTicket.status === "In Progress"
+                        ? "bg-blue-100 text-blue-700 border-blue-200"
+                        : "bg-slate-100 text-slate-700 border-slate-200"
+                    }`}>
+                      {selectedTicket.status}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider">Follow-Up SLA</div>
+                    <div className={`text-[13px] font-bold ${selectedTicket.followUpDate === "Overdue" ? "text-red-600" : "text-slate-800"}`}>
+                      {selectedTicket.followUpDate}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Info Card */}
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 flex justify-between items-center">
+                  <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> Client Details</h3>
+                  <button 
+                    onClick={() => {
+                      if (customerProfiles[selectedTicket.phone]) {
+                        setSelectedCustomerPhone(selectedTicket.phone);
+                        setActiveModal(null);
+                        setCurrentScreen("crm_database");
+                      } else {
+                        alert("No CRM profile loaded.");
+                      }
+                    }}
+                    className="text-[10px] font-bold text-[#2563eb] hover:underline"
+                  >
+                    View CRM &rarr;
+                  </button>
+                </div>
+                <div className="p-3 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Primary Contact</div>
+                    <div className="font-bold text-slate-800 text-[13px]">{selectedTicket.customerName}</div>
+                    <div className="text-[11px] text-slate-500 font-mono mt-0.5">{selectedTicket.phone}</div>
+                  </div>
+                  <div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Alt Contact</div>
+                    <div className="font-medium text-slate-700 text-[13px]">{selectedTicket.altPhone || "Not provided"}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Card */}
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-slate-50 px-3 py-2 border-b border-slate-200">
+                  <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5" /> Product Information</h3>
+                </div>
+                <div className="p-3 grid grid-cols-2 gap-y-4 gap-x-3 text-sm">
+                  <div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Brand / Model</div>
+                    <div className="font-bold text-slate-800 text-[13px]">{selectedTicket.brand}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">{selectedTicket.model || "Unknown Model"}</div>
+                  </div>
+                  <div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Product Category</div>
+                    <div className="font-medium text-slate-800 text-[13px]">{selectedTicket.productName}</div>
+                  </div>
+                  <div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Warranty</div>
+                    <div className={`font-bold text-[12px] uppercase ${selectedTicket.warrantyStatus === "Out of Warranty" ? "text-orange-600" : "text-green-600"}`}>
+                      {selectedTicket.warrantyStatus}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Serial No.</div>
+                    <div className="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 inline-block px-1.5 py-0.5 rounded border border-slate-200 mt-0.5">{selectedTicket.serialNo || "NO_SERIAL"}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Issue Description */}
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-slate-50 px-3 py-2 border-b border-slate-200">
+                  <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> Fault Description</h3>
+                </div>
+                <div className="p-3">
+                  <p className="text-[13px] leading-relaxed font-medium text-slate-700 bg-red-50/50 p-3 border border-red-100 rounded">
+                    {selectedTicket.issueDesc || selectedTicket.problemDescription || "No advanced description provided."}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Timeline (Mini version) */}
+              <div className="bg-white border border-slate-200 p-4 rounded-lg shadow-sm">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-2 mb-3">Service Timeline Overview</h4>
+                <div className="relative border-l-2 border-slate-200 pl-4 space-y-4 font-sans text-xs">
+                  <div className="relative">
+                    <span className="w-2.5 h-2.5 bg-orange-500 rounded-full absolute -left-[19.5px] top-1"></span>
+                    <div className="font-bold text-slate-800 text-[12px]">Job Raised</div>
+                    <div className="text-[10px] text-slate-400 uppercase font-mono mt-0.5">Agent: {selectedTicket.assignedAgent}</div>
+                  </div>
+                  {selectedTicket.status !== "New" && (
+                    <div className="relative">
+                      <span className="w-2.5 h-2.5 bg-[#2563eb] rounded-full absolute -left-[19.5px] top-1"></span>
+                      <div className="font-bold text-slate-800 text-[12px]">Status Progression</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">Current: {selectedTicket.status}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </>
+      )}
+
       {/* FLOATING SLA WARNING ALERTS WIDGET (Interactable) */}
       <div id="floating-sla-reminders" className="fixed bottom-10 right-4 w-60 bg-white border border-slate-350 rounded shadow-2xl flex flex-col opacity-90 hover:opacity-100 transition-all z-40 pointer-events-auto">
         <div className="bg-slate-800 text-white px-2.5 py-1 text-[9px] font-black tracking-widest uppercase flex justify-between rounded-t">
@@ -3077,21 +3045,21 @@ export default function App() {
         <div className="p-2 text-[10px] flex flex-col gap-1.5 font-mono">
           <div
             className="flex justify-between items-center border-b border-slate-100 pb-1 cursor-pointer hover:bg-slate-50"
-            onClick={() => { setSelectedTicketId("SRV-1011"); setCurrentScreen("ticket_detail"); }}
+            onClick={() => { setSelectedTicketId("SRV-1011"); setActiveModal("ticket_detail_drawer"); }}
           >
             <span className="font-bold text-blue-600 underline">SRV-1011</span>
             <span className="text-red-500 font-bold">4h Breach (Hair Dryer)</span>
           </div>
           <div
             className="flex justify-between items-center border-b border-slate-100 pb-1 cursor-pointer hover:bg-slate-50"
-            onClick={() => { setSelectedTicketId("SRV-1025"); setCurrentScreen("ticket_detail"); }}
+            onClick={() => { setSelectedTicketId("SRV-1025"); setActiveModal("ticket_detail_drawer"); }}
           >
             <span className="font-bold text-blue-600 underline">SRV-1025</span>
             <span className="text-orange-500 font-bold">52m Left (Coffee Maker)</span>
           </div>
           <div
             className="flex justify-between items-center cursor-pointer hover:bg-slate-50"
-            onClick={() => { setSelectedTicketId("SRV-0988"); setCurrentScreen("ticket_detail"); }}
+            onClick={() => { setSelectedTicketId("SRV-0988"); setActiveModal("ticket_detail_drawer"); }}
           >
             <span className="font-bold text-slate-450 underline">SRV-0988</span>
             <span className="text-slate-450 italic">Awaiting Manager authorization</span>
