@@ -71,15 +71,43 @@ export interface BrandProfile {
   contacts: BrandContact[];
 }
 
+export interface CustomerAsset {
+  id: string;
+  productName: string;
+  brand: string;
+  model: string;
+  serialNo: string;
+  purchaseDate: string;
+  warrantyFull: string;
+  warrantyParts: string; // e.g., "5 year board, 10 year compressor"
+  freeServicesTotal: number;
+  freeServicesUsed: number;
+  freeServicePeriod: string;
+}
+
+export interface CustomerProfile {
+  id: string;
+  fullName: string;
+  phone: string;
+  altPhone?: string;
+  email?: string;
+  address?: string;
+  assets: CustomerAsset[];
+  ticketHistory: string[];
+}
+
 export interface Ticket {
   id: string;
   customerName: string;
   phone: string;
+  altPhone?: string;
   productName: string;
   brand: string;
   model: string;
   type: "Site" | "Store";
   status: "New" | "Registration Pending" | "Brand Registered" | "In Progress" | "Waiting on Part" | "Ready for Pickup" | "Closed";
+  warrantyStatus?: "In Warranty" | "Out of Warranty" | "Unknown";
+  crmAutoCreated?: boolean;
   followUpDate: string;
   followUpStatus: string;
   serialNo?: string;
@@ -99,7 +127,51 @@ export interface Ticket {
   notificationSent?: "WhatsApp" | "Email" | "Both" | "None";
 }
 
+const BrandLogo = ({ className = "w-8 h-8" }: { className?: string }) => (
+  <svg viewBox="0 0 100 100" className={className} xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <mask id="logoMask">
+        <rect width="100" height="100" fill="white" />
+        <rect x="0" y="32" width="100" height="11" fill="black" />
+        <rect x="0" y="64" width="100" height="11" fill="black" />
+      </mask>
+    </defs>
+    <g mask="url(#logoMask)" fill="currentColor">
+      <circle cx="55" cy="53" r="43" />
+      <rect x="5" y="43" width="55" height="21" rx="10" />
+    </g>
+  </svg>
+);
+
 export default function App() {
+  // CRM State
+  const [customerProfiles, setCustomerProfiles] = useState<CustomerProfile[]>([
+    {
+      id: "CUST-1001",
+      fullName: "Aditya Sharma",
+      phone: "+91 98765 43210",
+      altPhone: "",
+      email: "aditya@example.com",
+      address: "Sector 4, HSR Layout, Bangalore",
+      assets: [
+        {
+          id: "AST-1001",
+          productName: "Mixer Grinder",
+          brand: "Prestige",
+          model: "Delight Plus",
+          serialNo: "PR-MIX-9912",
+          purchaseDate: "2025-01-10",
+          warrantyFull: "1 Year",
+          warrantyParts: "5 year motor warranty",
+          freeServicesTotal: 2,
+          freeServicesUsed: 1,
+          freeServicePeriod: "First Year"
+        }
+      ],
+      ticketHistory: ["SRV-1042"]
+    }
+  ]);
+
   // Live State
   const [tickets, setTickets] = useState<Ticket[]>([
     {
@@ -249,6 +321,7 @@ export default function App() {
     | "create_receipt"
     | "app_settings"
     | "brand_directory"
+    | "crm_database"
   >("dashboard");
 
   // Viewer Console Auto-Scroll Ref
@@ -343,6 +416,8 @@ export default function App() {
     frappeUrl: "https://frappe.invalid",
     frappeApiKey: "",
     frappeApiSecret: "",
+    workflowAutoEscalate: true,
+    workflowEscalateHours: 48,
     brandNumbers: [
       { brand: "Prestige", number: "1800-425-5000" },
       { brand: "Sony", number: "1800-103-7799" },
@@ -378,10 +453,12 @@ export default function App() {
   const [newTicketForm, setNewTicketForm] = useState({
     customerName: "",
     phone: "",
+    altPhone: "",
     productName: "",
     brand: "Prestige",
     model: "",
     type: "Store" as "Site" | "Store",
+    warrantyStatus: "Unknown" as "In Warranty" | "Out of Warranty" | "Unknown",
     serialNo: "",
     problemDescription: "",
     assignedAgent: "Suresh Kumar",
@@ -451,14 +528,18 @@ export default function App() {
       return;
     }
     const nextId = `SRV-${1000 + tickets.length + 1}`;
+    const autoCreatedCRM = appSettings.frappeEnabled ? true : false;
     const entry: Ticket = {
       id: nextId,
       customerName: newTicketForm.customerName,
       phone: newTicketForm.phone,
+      altPhone: newTicketForm.altPhone,
       productName: newTicketForm.productName,
       brand: newTicketForm.brand,
       model: newTicketForm.model,
       type: newTicketForm.type,
+      warrantyStatus: newTicketForm.warrantyStatus,
+      crmAutoCreated: autoCreatedCRM,
       status: "New",
       followUpDate: "Today",
       followUpStatus: "New Intake",
@@ -469,15 +550,63 @@ export default function App() {
       purchaseDate: newTicketForm.purchaseDate,
       invoiceStatus: "Found"
     };
+
+    // Auto-create / Update CRM
+    const existingCustomerIdx = customerProfiles.findIndex(c => c.phone === newTicketForm.phone);
+    
+    const newAsset: CustomerAsset = {
+      id: `AST-${1000 + Math.random().toString().substr(2, 4)}`,
+      productName: newTicketForm.productName,
+      brand: newTicketForm.brand,
+      model: newTicketForm.model,
+      serialNo: newTicketForm.serialNo,
+      purchaseDate: newTicketForm.purchaseDate || "",
+      warrantyFull: newTicketForm.warrantyStatus === "In Warranty" ? "1 Year (Assumed)" : "None",
+      warrantyParts: "",
+      freeServicesTotal: 0,
+      freeServicesUsed: 0,
+      freeServicePeriod: ""
+    };
+
+    if (existingCustomerIdx >= 0) {
+      const updatedProfiles = [...customerProfiles];
+      // Check if asset already exists using serial or matching product/model (simplified wrapper)
+      const existingAsset = updatedProfiles[existingCustomerIdx].assets.find(a => 
+        (a.serialNo && a.serialNo === newAsset.serialNo) || 
+        (a.brand === newAsset.brand && a.model === newAsset.model && !a.serialNo)
+      );
+
+      if (!existingAsset) {
+        updatedProfiles[existingCustomerIdx].assets.push(newAsset);
+      }
+      updatedProfiles[existingCustomerIdx].ticketHistory.push(nextId);
+      setCustomerProfiles(updatedProfiles);
+      // Mark entry as CRM mapped if we update
+      entry.crmAutoCreated = true;
+    } else {
+      const newCustomer: CustomerProfile = {
+        id: `CUST-${1000 + customerProfiles.length + 1}`,
+        fullName: newTicketForm.customerName,
+        phone: newTicketForm.phone,
+        altPhone: newTicketForm.altPhone,
+        assets: [newAsset],
+        ticketHistory: [nextId]
+      };
+      setCustomerProfiles([newCustomer, ...customerProfiles]);
+      entry.crmAutoCreated = true;
+    }
+
     setTickets([entry, ...tickets]);
     // Clear Form
     setNewTicketForm({
       customerName: "",
       phone: "",
+      altPhone: "",
       productName: "",
       brand: "Prestige",
       model: "",
       type: "Store",
+      warrantyStatus: "Unknown",
       serialNo: "",
       problemDescription: "",
       assignedAgent: "Suresh Kumar",
@@ -588,10 +717,13 @@ export default function App() {
       {/* Top Header Navigation */}
       <header id="main-header" className="h-12 bg-slate-900 text-white flex items-center justify-between px-3 shrink-0 border-b border-slate-700">
         <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2 font-bold tracking-tight text-sm md:text-base cursor-pointer" onClick={() => setCurrentScreen("dashboard")}>
-            <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center text-xs font-black text-white">L</div>
-            <span>Lavanya eMart</span>
-            <span className="text-slate-400 font-normal text-xs px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700">Helpdesk ERP v2.4</span>
+          <div className="flex items-center gap-3 font-bold tracking-tight cursor-pointer" onClick={() => setCurrentScreen("dashboard")}>
+            <BrandLogo className="w-8 h-8 text-blue-500" />
+            <div className="flex flex-col leading-none">
+              <span className="text-[12px] font-semibold text-white tracking-tight">Lavanya</span>
+              <span className="text-[18px] font-black text-white tracking-tighter" style={{ marginTop: '-2px' }}>mart</span>
+            </div>
+            <span className="ml-2 text-slate-400 font-normal text-xs px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700">Helpdesk ERP v2.4</span>
           </div>
 
           <nav className="hidden md:flex gap-1 h-full items-center">
@@ -668,6 +800,7 @@ export default function App() {
               <option value="create_receipt">13. Front Desk: Create Receipt</option>
               <option value="app_settings">14. System: App Settings</option>
               <option value="brand_directory">15. Brand & Service Directory</option>
+              <option value="crm_database">16. CRM Customer Database</option>
             </select>
           </div>
 
@@ -838,6 +971,15 @@ export default function App() {
             </button>
 
             <button
+              onClick={() => setCurrentScreen("crm_database")}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded text-left text-xs ${
+                currentScreen === "crm_database" ? "bg-slate-800 text-white" : "hover:bg-slate-200 text-slate-700"
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-purple-500" /> CRM Database
+            </button>
+
+            <button
               onClick={() => setCurrentScreen("login")}
               className={`flex items-center gap-1.5 px-2 py-1 rounded text-left text-xs text-red-600 hover:bg-red-50 mt-auto`}
             >
@@ -853,10 +995,15 @@ export default function App() {
           {currentScreen === "login" && (
             <div id="screen-login" className="flex-1 flex items-center justify-center p-4">
               <div className="w-full max-w-sm bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden">
-                <div className="bg-slate-900 text-white p-4 text-center">
-                  <div className="inline-block w-8 h-8 bg-orange-500 rounded text-sm font-bold leading-8 mb-2">L</div>
-                  <h2 className="text-sm font-bold tracking-tight uppercase">Lavanya eMart ERP Terminal</h2>
-                  <p className="text-[10px] text-slate-400 uppercase mt-1">Authorized Personnel Authentication Required</p>
+                <div className="bg-blue-700 text-white p-6 flex flex-col items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <BrandLogo className="w-12 h-12 text-white" />
+                    <div className="flex flex-col leading-none text-left">
+                      <span className="text-[16px] font-semibold text-white tracking-tight">Lavanya</span>
+                      <span className="text-[26px] font-black text-white tracking-tighter" style={{ marginTop: '-2px' }}>mart</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-blue-200 uppercase mt-4 tracking-widest font-bold">Solutions for modern living</p>
                 </div>
                 <div className="p-4 space-y-3">
                   <div>
@@ -1195,7 +1342,7 @@ export default function App() {
               </div>
 
               <form onSubmit={handleAddNewTicket} className="flex-1 space-y-3 max-w-2xl text-xs">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Customer Full Name *</label>
                     <input
@@ -1218,9 +1365,19 @@ export default function App() {
                       className="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none"
                     />
                   </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Alternative Phone</label>
+                    <input
+                      type="tel"
+                      placeholder="Secondary Number"
+                      value={newTicketForm.altPhone}
+                      onChange={(e) => setNewTicketForm({ ...newTicketForm, altPhone: e.target.value })}
+                      className="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none"
+                    />
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Product Category</label>
                     <input
@@ -1238,7 +1395,8 @@ export default function App() {
                       onChange={(e) => setNewTicketForm({ ...newTicketForm, brand: e.target.value })}
                       className="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none bg-white font-medium"
                     >
-                      <option value="Prestige">Prestige</option>
+                      {brands.map(b => <option key={b.id} value={b.brandName}>{b.brandName}</option>)}
+                      {!brands.find(b => b.brandName === "Prestige") && <option value="Prestige">Prestige</option>}
                       <option value="Sony">Sony</option>
                       <option value="LG">LG</option>
                       <option value="Crompton">Crompton</option>
@@ -1251,11 +1409,23 @@ export default function App() {
                     <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Model ID Number</label>
                     <input
                       type="text"
-                      placeholder="e.g. Deluxe Max 750W"
+                      placeholder="e.g. Mixer Grinder, Smart LED TV"
                       value={newTicketForm.model}
                       onChange={(e) => setNewTicketForm({ ...newTicketForm, model: e.target.value })}
                       className="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Warranty Status</label>
+                    <select
+                      value={newTicketForm.warrantyStatus}
+                      onChange={(e) => setNewTicketForm({ ...newTicketForm, warrantyStatus: e.target.value as "In Warranty" | "Out of Warranty" | "Unknown" })}
+                      className="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none bg-white font-medium"
+                    >
+                      <option value="Unknown">Unknown</option>
+                      <option value="In Warranty">In Warranty</option>
+                      <option value="Out of Warranty">Out of Warranty</option>
+                    </select>
                   </div>
                 </div>
 
@@ -1392,6 +1562,11 @@ export default function App() {
                       {selectedTicket.brand.toUpperCase()} SERVICE REGISTRATION FILE
                     </span>
                     <span className="text-[10px] text-slate-400 uppercase">Assigned Agent: {selectedTicket.assignedAgent}</span>
+                    {selectedTicket.crmAutoCreated && (
+                      <span className="ml-2 inline-flex items-center gap-1 bg-indigo-50 border border-indigo-200 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
+                        <Network className="w-2.5 h-2.5" /> CRM Synced
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -1423,16 +1598,21 @@ export default function App() {
                   {/* Basic user info desk */}
                   <div className="bg-slate-50 border border-slate-200 p-3 rounded shadow-sm">
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-1 mb-2">Customer & Device Dossier</h4>
-                    <div className="grid grid-cols-2 gap-3 text-xs leading-5">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 text-xs leading-5">
                       <div>
                         <div className="text-[10px] font-bold text-slate-400 uppercase">Registered Customer</div>
                         <div className="font-bold text-slate-900">{selectedTicket.customerName}</div>
                         <div className="text-slate-500">{selectedTicket.phone}</div>
+                        {selectedTicket.altPhone && <div className="text-slate-500 text-[10px]">Alt: {selectedTicket.altPhone}</div>}
                       </div>
                       <div>
                         <div className="text-[10px] font-bold text-slate-400 uppercase">Equipment Profile</div>
                         <div className="font-bold text-slate-900">{selectedTicket.brand} {selectedTicket.productName}</div>
                         <div className="text-slate-500 italic">Model: {selectedTicket.model || "N/A"}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase">Warranty Status</div>
+                        <div className={`font-mono px-1 rounded inline-block text-[11px] font-bold ${selectedTicket.warrantyStatus === 'In Warranty' ? 'bg-green-100 text-green-800' : selectedTicket.warrantyStatus === 'Out of Warranty' ? 'bg-red-100 text-red-800' : 'bg-slate-200 text-slate-700'}`}>{selectedTicket.warrantyStatus || "Unknown"}</div>
                       </div>
                       <div>
                         <div className="text-[10px] font-bold text-slate-400 uppercase">Serial Plate Key</div>
@@ -1445,6 +1625,21 @@ export default function App() {
                         </div>
                       </div>
                     </div>
+                    {/* Previous complaint history */}
+                    {tickets.filter(t => t.phone === selectedTicket.phone && t.id !== selectedTicket.id).length > 0 && (
+                      <div className="mt-3 pt-2 border-t border-slate-200">
+                        <div className="text-[10px] font-bold text-orange-600 uppercase mb-1 flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> Previous Complaint History Found
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {tickets.filter(t => t.phone === selectedTicket.phone && t.id !== selectedTicket.id).map(prev => (
+                            <div key={prev.id} className="bg-orange-50 border border-orange-200 rounded px-2 py-1 text-[10px] font-sans">
+                              <span className="font-mono font-bold text-orange-800">{prev.id}</span> - {prev.brand} {prev.productName} ({prev.status})
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Complaint report */}
@@ -1832,9 +2027,15 @@ export default function App() {
           {currentScreen === "qr_form" && (
             <div id="screen-qr-form" className="flex-1 flex justify-center p-3">
               <div className="w-full max-w-sm border-4 border-slate-900 rounded-2xl shadow-2xl bg-white overflow-hidden flex flex-col">
-                <div className="bg-orange-500 text-white p-3 text-center shrink-0">
-                  <div className="text-xl font-bold font-sans">Lavanya eMart Mobile Portal</div>
-                  <div className="text-[9px] uppercase font-black tracking-widest text-orange-100">Self Service Registration scan</div>
+                <div className="bg-blue-700 text-white p-4 flex flex-col items-center justify-center shrink-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BrandLogo className="w-8 h-8 text-white" />
+                    <div className="flex flex-col leading-none text-left">
+                      <span className="text-[12px] font-semibold text-white tracking-tight">Lavanya</span>
+                      <span className="text-[18px] font-black text-white tracking-tighter" style={{ marginTop: '-2px' }}>mart</span>
+                    </div>
+                  </div>
+                  <div className="text-[9px] uppercase font-black tracking-widest text-blue-200">Self Service Registration Scan</div>
                 </div>
                 
                 <div className="p-4 flex-1 overflow-y-auto font-sans leading-normal space-y-3 text-xs">
@@ -1937,8 +2138,8 @@ export default function App() {
                     Submit Self-Service Ticket
                   </button>
                 </div>
-                <div className="bg-slate-100 p-2 text-center text-[9px] text-slate-400 shrink-0 uppercase tracking-widest font-bold">
-                  Lavanya eMart In-Store POS &copy; 2026
+                <div className="bg-slate-100 p-2 text-center text-[9px] text-slate-400 shrink-0 uppercase tracking-widest font-bold flex items-center justify-center gap-1.5">
+                  <BrandLogo className="w-3.5 h-3.5 text-blue-400" /> Lavanya mart In-Store POS &copy; 2026
                 </div>
               </div>
             </div>
@@ -2021,11 +2222,14 @@ export default function App() {
           {currentScreen === "viewer_console" && (
             <div id="screen-viewer-display" className="bg-slate-950 text-white rounded p-4 flex-1 flex flex-col overflow-hidden font-sans border-2 border-slate-850">
               <div className="border-b border-slate-800 pb-2 mb-4 flex justify-between items-center shrink-0">
-                <div>
-                  <h3 className="text-base font-black tracking-widest text-orange-400 uppercase">
-                    LAVANYA EMART REPARATIONS BOARD
-                  </h3>
-                  <p className="text-[10px] text-slate-400 uppercase">Awaiting Collection - Please notice your token ID</p>
+                <div className="flex items-center gap-3">
+                  <BrandLogo className="w-10 h-10 text-blue-500" />
+                  <div>
+                    <h3 className="text-base font-black tracking-widest text-blue-400 uppercase flex items-center gap-2">
+                       LAVANYA MART REPARATIONS BOARD
+                    </h3>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest">Awaiting Collection - Please notice your token ID</p>
+                  </div>
                 </div>
                 <div className="text-[11px] bg-slate-905 px-2 py-1 rounded text-green-400 font-bold font-mono">
                   &bull; LIVE DISPLAY BOARD
@@ -2101,7 +2305,10 @@ export default function App() {
               {/* Actual paper copy mockup */}
               <div className="w-full max-w-md p-5 border bg-amber-50/10 border-slate-200 text-xs font-mono space-y-4">
                 <div className="text-center font-sans">
-                  <div className="font-black text-sm">LAVANYA EMART HELPDESK REPAIR UNIT</div>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <BrandLogo className="w-5 h-5 text-slate-800" />
+                    <div className="font-black text-sm uppercase">Lavanya Mart Helpdesk Repair Unit</div>
+                  </div>
                   <div className="text-[10px] text-slate-500">Service Plaza, Bangalore, India | Ph: +91 99888 77777</div>
                   <div className="text-xs font-bold border rounded px-2 py-0.5 mt-2 inline-block">
                     Inward Intake Receipt Copy
@@ -2271,6 +2478,32 @@ export default function App() {
                   </div>
                 </section>
 
+                {/* Business Workflow Settings */}
+                <section>
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-rose-500" /> Business Workflow Automations
+                  </h4>
+                  <div className="border border-slate-200 rounded p-3 bg-slate-50">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="font-bold text-[11px] text-slate-800 uppercase flex items-center gap-1">
+                        <Flame className="w-3.5 h-3.5 text-rose-600" /> SLA Overdue Manager Auto-Escalation
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" checked={appSettings.workflowAutoEscalate} onChange={(e) => setAppSettings({...appSettings, workflowAutoEscalate: e.target.checked})} />
+                        <div className="w-7 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-rose-500"></div>
+                      </label>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Escalate if pending over (Hours)</label>
+                        <input type="number" value={appSettings.workflowEscalateHours} onChange={(e) => setAppSettings({...appSettings, workflowEscalateHours: parseInt(e.target.value) || 0})} className="w-full max-w-[200px] border border-slate-300 rounded px-2 py-1 flex-1 text-xs outline-none focus:border-rose-500" disabled={!appSettings.workflowAutoEscalate} />
+                      </div>
+                      <p className="text-[9px] text-slate-400 leading-tight">If a ticket stays unresolved past this hour limit, it will automatically notify the regional service manager and tag the ticket as Urgent.</p>
+                      <p className="text-[9px] text-slate-400 leading-tight">For Brand-specific SLAs (Auto-Send limits), manage them via the Brand Directory.</p>
+                    </div>
+                  </div>
+                </section>
+
                 {/* Toll Free Brand Numbers */}
                 <section>
                   <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 flex items-center gap-2">
@@ -2418,6 +2651,95 @@ export default function App() {
                           </div>
                         )}
                       </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ==================== 16. CRM CUSTOMER DATABASE ==================== */}
+          {currentScreen === "crm_database" && (
+            <div id="screen-crm" className="bg-white border border-slate-200 rounded p-4 flex-1 flex flex-col overflow-hidden shadow-sm">
+              <div className="border-b border-slate-200 pb-3 mb-4 flex justify-between items-end">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-1.5">
+                    <Users className="w-4.5 h-4.5 text-purple-600" />
+                    CRM Customer Database
+                  </h3>
+                  <p className="text-[10px] text-slate-400">View customer registered assets, warranty lifecycles, and claim history</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 overflow-y-auto pr-2 pb-6">
+                {customerProfiles.map(cust => (
+                  <div key={cust.id} className="border border-slate-200 rounded overflow-hidden flex flex-col">
+                    <div className="p-3 bg-slate-50 border-b border-slate-200 shrink-0">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-bold text-sm text-slate-900">{cust.fullName}</h4>
+                        <span className="text-[10px] font-mono text-slate-500 bg-slate-200 px-1.5 leading-tight rounded">{cust.id}</span>
+                      </div>
+                      <div className="text-[10px] text-slate-600 flex flex-col gap-0.5 font-mono">
+                        <div className="flex items-center gap-1"><Phone className="w-3 h-3 text-slate-400" /> {cust.phone} {cust.altPhone && ` | Alt: ${cust.altPhone}`}</div>
+                        <div className="flex items-center gap-1"><Mail className="w-3 h-3 text-slate-400" /> {cust.email || "No Email"}</div>
+                        <div className="flex items-center gap-1"><MapPin className="w-3 h-3 text-slate-400" /> {cust.address || "Address not provided"}</div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 flex-1 overflow-y-auto bg-white space-y-3">
+                      <div className="text-[10px] font-black text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-100 pb-0.5">Purchased Assets ({cust.assets.length})</div>
+                      {cust.assets.map((asset, i) => (
+                        <div key={i} className="border border-indigo-100 rounded bg-indigo-50/30 p-2 shadow-sm rounded-lg">
+                          <div className="flex justify-between items-center mb-1">
+                            <h5 className="text-[11px] font-bold text-indigo-900">{asset.brand} {asset.productName}</h5>
+                            <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1 py-0.5 rounded uppercase font-bold tracking-widest">{asset.model || "Unknown"}</span>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2 text-[9px] mt-2 border-t border-indigo-100 pt-1">
+                            <div>
+                                <span className="block text-slate-400 uppercase font-bold">Serial</span>
+                                <span className="font-mono text-slate-700">{asset.serialNo || "N/A"}</span>
+                            </div>
+                            <div>
+                                <span className="block text-slate-400 uppercase font-bold">Purchase Date</span>
+                                <span className="font-mono text-slate-700">{asset.purchaseDate || "Unknown"}</span>
+                            </div>
+                            <div>
+                                <span className="block text-slate-400 uppercase font-bold">Full Warranty</span>
+                                <span className="font-medium text-slate-700">{asset.warrantyFull || "None"}</span>
+                            </div>
+                            <div>
+                                <span className="block text-slate-400 uppercase font-bold">Parts Cover</span>
+                                <span className="font-medium text-slate-700">{asset.warrantyParts || "None"}</span>
+                            </div>
+                            <div className="col-span-2 flex justify-between bg-white border border-indigo-100 rounded px-2 py-1 mt-1">
+                                <div className="flex gap-1 items-center">
+                                    <span className="text-slate-400 uppercase font-bold">Free Services:</span>
+                                    <span className="font-mono text-indigo-700 font-bold">{asset.freeServicesUsed}/{asset.freeServicesTotal} used</span>
+                                </div>
+                                <span className="text-slate-400">|</span>
+                                <span className="text-slate-500 font-medium">{asset.freeServicePeriod || "Standard"}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <div className="text-[10px] font-black text-slate-800 uppercase tracking-wider mb-2 border-b border-slate-100 mt-4 pb-0.5">Service Claim Records</div>
+                      {cust.ticketHistory.length === 0 ? <p className="text-[10px] text-slate-400 italic">No tickets filed.</p> : (
+                        <div className="flex flex-wrap gap-1">
+                          {cust.ticketHistory.map((tid, i) => (
+                            <span key={i} className="text-[9px] bg-slate-100 border border-slate-200 text-slate-600 px-1 py-0.5 rounded font-mono cursor-pointer hover:bg-slate-200" onClick={() => {
+                                const ticket = tickets.find(t => t.id === tid);
+                                if (ticket) {
+                                    // Normally we would just switch context but here we prompt as we are isolated
+                                    alert(`History Ticket Request:\n${ticket.id} - ${ticket.brand} ${ticket.productName}\nStatus: ${ticket.status}`);
+                                } else {
+                                    alert(`Ticket ${tid} no longer active.`);
+                                }
+                            }}>{tid}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
